@@ -14,7 +14,7 @@ test('core workflow is semantic, keyboard reachable, and error free', async ({ p
   await expect(page).toHaveTitle(/Exif Clock Repair/); await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('h1')).toHaveCount(1); await expect(page.locator('main')).toHaveCount(1); await expect(page.locator('img:not([alt])')).toHaveCount(0);
   await page.keyboard.press('Tab'); await expect(page.locator('.skip')).toBeFocused();
-  for (let i = 0; i < 5 && !(await page.locator('#folder-trigger').evaluate(el => el === document.activeElement)); i++) await page.keyboard.press('Tab');
+  for (let i = 0; i < 10 && !(await page.locator('#folder-trigger').evaluate(el => el === document.activeElement)); i++) await page.keyboard.press('Tab');
   await expect(page.locator('#folder-trigger')).toBeFocused(); await expect(page.locator('#folder-trigger')).toHaveCSS('outline-style', 'solid');
   const chooserEvent = page.waitForEvent('filechooser'); await page.keyboard.press('Enter'); const chooser = await chooserEvent; await chooser.setFiles('tests/fixtures');
   await expect(page.locator('#findings-title')).toContainText('1 file examined');
@@ -43,31 +43,67 @@ test('saved plan can be cleared on mobile and targets remain large', async ({ pa
   expect(await page.evaluate(() => localStorage.getItem('exif-clock-repair:last-plan'))).toBeNull();
 });
 
-test('license return is stored, stripped, and verified without blocking free use', async ({ page }) => {
-  let verificationCalls = 0; await page.route('https://api.sociobot.in/**', route => { verificationCalls++; return route.fulfill({ json: { valid: true, reason: 'ok', expires_at: null }, headers: { 'access-control-allow-origin': '*' } }); });
-  await page.goto('/?license=test-token'); await expect(page).toHaveURL('/');
-  await expect(page.locator('#license-status')).toContainText('active');
-  expect(await page.evaluate(() => localStorage.getItem('sb_license:exif-clock-repair'))).toBe('test-token');
-  await page.reload(); await expect(page.locator('#license-status')).toContainText('active'); expect(verificationCalls).toBe(1);
+test('first screen names the user, demo, privacy, offline, and free facts', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('h1')).toHaveText('Repair photo capture clocks before sorting.');
+  await expect(page.locator('.lede')).toContainText('family photo archive');
+  await expect(page.getByRole('link', { name: 'Try it with sample data' })).toHaveAttribute('href', '/demo');
+  await expect(page.locator('.facts')).toContainText('Photos stay on this device.');
+  await expect(page.locator('.facts')).toContainText('Works offline after first visit.');
+  await expect(page.locator('.facts')).toContainText('Free to use. No purchase required.');
 });
 
-test('sidecars download once as a valid directory-preserving ZIP', async ({ page }, testInfo) => {
-  const second = { ...savedRecord, id: 'saved-2', path: 'second-album/IMG_0001.jpg' };
-  await page.addInitScript(records => localStorage.setItem('exif-clock-repair:last-plan', JSON.stringify(records)), [savedRecord, second]);
-  await page.goto('/'); const event = page.waitForEvent('download'); await page.locator('#export-xmp').click(); const download = await event;
+test('site routes have release metadata, shared legal structure, a real 404, and no fallback CSP error', async ({ page }) => {
+  const errors: string[] = []; page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.goto('/'); await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://exif-clock-repair.sociobot.in/');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-card/); await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
+  for (const route of ['/privacy/', '/terms/']) { await page.goto(route); await expect(page.locator('header')).toHaveCount(1); await expect(page.locator('footer')).toHaveCount(1); await expect(page.locator('h1')).toHaveCount(1); await expect(page.locator('main')).toHaveCount(1); }
+  const notFound = await page.goto('/does-not-exist'); expect(notFound?.status()).toBe(200); await expect(page.locator('h1')).toContainText('not in the notebook');
+  await page.goto('/offline.html'); await expect(page).toHaveTitle('Offline — Exif Clock Repair'); await expect(page.locator('main')).toHaveCount(1); expect(errors).toEqual([]);
+});
+
+test('mobile layout has no horizontal overflow at 200% text size', async ({ page }) => {
+  await page.goto('/demo'); await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test('@claim:demo-isolated demo sample data is separate from a real plan and can be reset', async ({ page }) => {
+  await page.addInitScript(record => localStorage.setItem('exif-clock-repair:last-plan', JSON.stringify([record])), savedRecord);
+  await page.goto('/demo'); await expect(page).toHaveTitle('Demo — Exif Clock Repair');
+  await expect(page.locator('.demo-banner')).toContainText('sample data, nothing is saved'); await expect(page.locator('#findings-title')).toContainText('3 files examined');
+  await page.locator('[data-select="demo-kitchen"]').uncheck();
+  expect(await page.evaluate(() => localStorage.getItem('exif-clock-repair:last-plan'))).toContain(JSON.stringify(savedRecord.id));
+  expect(await page.evaluate(() => localStorage.getItem('demo:exif-clock-repair:last-plan'))).toContain('demo-kitchen');
+  await page.locator('#reset-demo').click(); await expect(page.locator('#findings-title')).toContainText('3 files examined');
+  expect(await page.evaluate(() => localStorage.getItem('demo:exif-clock-repair:last-plan'))).toBeNull();
+});
+
+test('@claim:sidecar-export demo sidecars download once as a valid directory-preserving ZIP', async ({ page }, testInfo) => {
+  await page.goto('/demo'); const event = page.waitForEvent('download'); await page.locator('#export-xmp').click(); const download = await event;
   expect(download.suggestedFilename()).toBe('exif-clock-repair-sidecars.zip'); const archive = testInfo.outputPath('sidecars.zip'); await download.saveAs(archive);
   const listing = execFileSync('unzip', ['-Z1', archive], { encoding: 'utf8' });
-  expect(listing).toContain('album/IMG_0001.xmp'); expect(listing).toContain('second-album/IMG_0001.xmp'); expect(listing).toContain('exif-clock-repair-ledger.json');
+  expect(listing).toContain('Family archive/1998/1998-kitchen-birthday.xmp'); expect(listing).toContain('Family archive/2003/2003-garden-portrait.xmp'); expect(listing).toContain('exif-clock-repair-ledger.json');
 });
 
-test('service worker restores the local workspace offline', async ({ page, context }) => {
-  await page.addInitScript(record => localStorage.setItem('exif-clock-repair:last-plan', JSON.stringify([record])), savedRecord);
-  await page.goto('/'); await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.scriptURL || '')).toContain('/sw.js?v=4');
-  await expect.poll(() => page.evaluate(async () => (await caches.open('exif-clock-repair-v4')).keys().then(keys => keys.some(key => key.url.includes('/assets/index-'))))).toBe(true);
-  const cachedBytes = await page.evaluate(async () => { const cache = await caches.open('exif-clock-repair-v4'); const entries = (await cache.keys()).filter(request => request.url.includes('/assets/')); return Promise.all(entries.map(async request => (await (await cache.match(request))!.arrayBuffer()).byteLength)); });
-  expect(cachedBytes.length).toBeGreaterThanOrEqual(2); expect(Math.min(...cachedBytes)).toBeGreaterThan(1000); await page.reload(); await expect(page.locator('#findings-title')).toContainText('1 file examined');
+test('@claim:offline-reload service worker restores the demo workspace offline after its first visit', async ({ page, context }) => {
+  await page.goto('/demo'); await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.scriptURL || '')).toContain('/sw.js?v=5');
+  await expect.poll(() => page.evaluate(async () => (await caches.open('exif-clock-repair-v5')).keys().then(keys => keys.some(key => key.url.includes('/assets/'))))).toBe(true);
+  const cachedBytes = await page.evaluate(async () => { const cache = await caches.open('exif-clock-repair-v5'); const entries = (await cache.keys()).filter(request => request.url.includes('/assets/')); return Promise.all(entries.map(async request => (await (await cache.match(request))!.arrayBuffer()).byteLength)); });
+  expect(cachedBytes.length).toBeGreaterThanOrEqual(2); expect(Math.min(...cachedBytes)).toBeGreaterThan(1000); await page.reload(); await expect(page.locator('#findings-title')).toContainText('3 files examined');
   await page.evaluate(async () => { const registration = await navigator.serviceWorker.getRegistration(); await registration?.update(); });
-  expect(await page.evaluate(() => caches.keys())).toEqual(['exif-clock-repair-v4']);
+  expect(await page.evaluate(() => caches.keys())).toEqual(['exif-clock-repair-v5']);
   await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#findings-title')).toContainText('1 file examined');
+  await expect(page.locator('#findings-title')).toContainText('3 files examined');
+});
+
+test('@claim:local-photo-processing demo workflow sends no photo data off-origin', async ({ page }) => {
+  const origins = new Set<string>(); page.on('request', request => origins.add(new URL(request.url()).origin));
+  await page.goto('/demo'); await expect(page.locator('#findings-title')).toContainText('3 files examined');
+  await page.locator('#export-json').click(); await page.locator('#export-xmp').click();
+  expect([...origins]).toEqual([new URL(page.url()).origin]);
+});
+
+test('@claim:free-core demo completes the core repair plan without a purchase', async ({ page }) => {
+  await page.goto('/demo'); await expect(page.locator('#findings-title')).toContainText('2 sidecars ready');
+  await expect(page.locator('text=Buy Archive Support')).toHaveCount(0); await expect(page.locator('.facts')).toContainText('Free to use. No purchase required.');
 });

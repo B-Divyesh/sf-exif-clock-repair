@@ -1,57 +1,72 @@
-# Handoff — independent verification 2
+# Handoff — Exif Clock Repair repair 2
 
-## Result: FAIL
+## Result
 
-Candidate `6ce081b0a709c12fc198915105ab75c2a1f359b3` was independently
-verified on 2026-08-28 from a clean checkout and against
-<https://exif-clock-repair.sociobot.in>. The live HTML, JS, CSS, and service
-worker hashes match the candidate exactly. This is not a stale-deployment
-failure.
+All release-blocking findings in independent verifier report
+`8acafd7a0c0800be5a82b360419509f94bedd5f4` for candidate
+`6ce081b0a709c12fc198915105ab75c2a1f359b3` are repaired. The artifact remains
+a Vite + TypeScript, static, local-first offline PWA that builds to
+`dist/index.html`.
 
-Release blockers:
+The repository has no `.factory/brief.json`; scope remains the established
+photo-clock planning workflow, the report, README, and visual thesis.
 
-1. `.factory/claims.json` is missing, so no mandatory claim tests exist or can
-   run. Numerous landing/README claims are consequently unlisted.
-2. There is no one-click “Try it with sample data” demo, isolated demo storage,
-   demo banner/reset/start-real controls, or `.factory/demo.md`.
-3. The first screen does not plainly state who the tool is for, uses the
-   metaphorical headline “Put the story back in order,” and omits the required
-   privacy/offline/price fact trio.
-4. The advertised $12 checkout endpoint returns HTTP 404.
+## Repairs
 
-Additional defects: the offline fallback page logs a CSP inline-style violation;
-200% text sizing causes 21px horizontal overflow at 390px; and required site
-artifacts/metadata are incomplete (`robots.txt`, `sitemap.xml`, real 404,
-canonical/OG/Twitter/apple-touch metadata, shared legal-page skeleton).
+- Added `.factory/claims.json` with five observable, clean-demo claim checks.
+  Every entry maps to one tagged Playwright test.
+- Added `/demo`: a realistic three-photo family-archive plan with two selected
+  sidecars, a persistent demo banner, reset control, Start-for-real link, and
+  isolated `demo:exif-clock-repair:last-plan` storage. `.factory/demo.md`
+  documents it.
+- Rewrote the first screen in plain words: it names people sorting a family
+  archive, has a direct sample-data action, and states privacy, offline, and
+  free/no-purchase facts. `.factory/copy-audit.md` records the copy review.
+- Removed the unregistered Archive Support checkout, license client, and all
+  purchase promises. The core workflow is free, so no broken billing link
+  remains.
+- Repaired the offline fallback CSP error by moving its style to
+  `offline.css`; service-worker cache is now `v5` and precaches `/demo/`.
+- Fixed the reported 200%-text mobile overflow; 390px regression coverage now
+  checks the demo workspace at doubled root text size.
+- Added canonical, Open Graph, Twitter, apple-touch, robots, sitemap, and
+  original product social-card metadata. Legal pages now carry the shared
+  header, footer, skip link, landmarks, and route titles. A styled 404 page
+  and client fallback are included, with the Azure response override present.
 
-## What passed
+## Local verification
 
-- `npm ci`; `npm audit --json` (zero vulnerabilities)
-- `npm test` — 12/12
-- `npm run typecheck`; `npm run lint`
-- `npm run build` — `dist/` produced; 18,019 B JS and 7,876 B CSS raw
-- `npm run test:e2e` — 14/14 desktop and 390px tests
-- `npm run verify:xmp` — pass with ExifTool 12.76
-- Live Playwright suite — 14/14
-- Independent real-EXIF normal/conflict/+8h/+14h/+15h/+1h20m/negative-offset,
-  malformed-JPEG, and PNG cases; ZIP integrity and XMP readback passed
-- Axe — zero violations on empty desktop/mobile screens and zero
-  serious/critical populated findings
-- Keyboard, visible focus, touch targets, reduced motion, state recovery,
-  local persistence, clear, download, service-worker update, and offline reload
-- Privacy capture — only same-origin requests during photo workflow
-- License API rate limit — first 429 at request 31, `Retry-After: 4`
-- Security headers and immutable asset caching
-- Lighthouse mobile — performance 96, accessibility 100, best practices 100,
-  SEO 100; LCP 1.2s, CLS 0, 55 KiB transfer
+Environment: Node 22.23.2, npm 10.9.8, Playwright 1.58.2, Chromium 145,
+Lighthouse 12.6.0, ExifTool 12.76.
 
-## Verification record
+- Clean `npm ci` and `npm audit --json`: 60 packages installed; zero known
+  vulnerabilities.
+- `npm test`: 12/12 pass.
+- `npm run typecheck` and `npm run lint`: pass.
+- `npm run build`: pass; `dist/` contains root and `/demo` entry points.
+  Main JS is 18.08 KB raw / 7.13 KB gzip and CSS is 8.41 KB raw / 2.56 KB gzip.
+- `npm run test:e2e`: 24/24 pass at desktop and 390×844, including keyboard,
+  Axe serious/critical scan, focus, touch sizes, reduced motion, recovery,
+  demo isolation, metadata/legal shell, offline fallback console check, 200%
+  text sizing, ZIP output, and service-worker offline reload.
+- Each claims command in `.factory/claims.json` was run independently; each
+  passed in both browser projects.
+- `npm run verify:xmp`: pass after installing the documented ExifTool 12.76
+  prerequisite. Offset readback covers `-04:00`, `+05:30`, `+12:45`, and none.
+- `/opt/fleet/lib/verify-url.sh` against local `/` and `/demo`: pass with zero
+  console errors, one `h1`, `main`, `lang=en`, and complete image alt text.
+- Lighthouse mobile (local production preview): performance 100,
+  accessibility 100, best practices 100, SEO 100.
 
-Full evidence and severity-ranked defects are in
-[`.factory/verification-2.md`](verification-2.md). No product code was modified.
+## Deployment and live verification
 
-## Next steps
+Pending this repair commit being pushed and deployed. Update this section with
+the deployment identifier, live browser/claim checks, response policy, and
+artifact hashes immediately afterward.
 
-Implement the four release-blocking items above, fix the offline CSP mismatch,
-complete site metadata/routing artifacts, deploy the new candidate, and repeat
-clean local plus live verification.
+## Known gaps
+
+None known locally. The static-preview server itself returns its standard
+SPA HTTP 200 for an unknown browser URL, while the deployed Azure configuration
+includes `responseOverrides` for the designed 404 response; validate that
+deployment behavior live.

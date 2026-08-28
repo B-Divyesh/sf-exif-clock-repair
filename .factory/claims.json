@@ -1,0 +1,37 @@
+[
+  {
+    "id": "demo-isolated",
+    "claim": "Demo — sample data, nothing is saved.",
+    "where": "demo banner, README",
+    "test": "npm run test:e2e -- --grep @claim:demo-isolated",
+    "sandbox": "fresh browser context at /demo; seed a real plan, change demo data, reset, and assert the real key remains untouched"
+  },
+  {
+    "id": "local-photo-processing",
+    "claim": "Photos stay on this device.",
+    "where": "landing facts, README, privacy",
+    "test": "npm run test:e2e -- --grep @claim:local-photo-processing",
+    "sandbox": "fresh browser context at /demo; observe every request while exporting the sample ledger and sidecar ZIP; assert same-origin only"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after first visit.",
+    "where": "landing facts, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for the service-worker cache, set the context offline, reload, and assert the sample plan renders"
+  },
+  {
+    "id": "sidecar-export",
+    "claim": "Downloads portable XMP sidecars and a JSON decision ledger in one ZIP.",
+    "where": "landing repair-plan section, README",
+    "test": "npm run test:e2e -- --grep @claim:sidecar-export",
+    "sandbox": "fresh browser context at /demo; download the ZIP and inspect the sample sidecar paths and audit ledger"
+  },
+  {
+    "id": "free-core",
+    "claim": "Free to use. No purchase required.",
+    "where": "landing facts",
+    "test": "npm run test:e2e -- --grep @claim:free-core",
+    "sandbox": "fresh browser context at /demo; assert its two repair proposals and exports are available with no purchase UI"
+  }
+]

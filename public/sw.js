@@ -1,5 +1,5 @@
-const CACHE = 'exif-clock-repair-v4';
-const SHELL = ['/', '/index.html', '/offline.html', '/manifest.webmanifest', '/notebook-bench.webp', '/legal.css'];
+const CACHE = 'exif-clock-repair-v5';
+const SHELL = ['/', '/index.html', '/demo/', '/demo/index.html', '/offline.html', '/offline.css', '/manifest.webmanifest', '/notebook-bench.webp', '/legal.css'];
 self.addEventListener('install', event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   const index = await fetch('/index.html', { cache: 'reload' });
