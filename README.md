@@ -14,9 +14,8 @@ Live: https://exif-clock-repair.sociobot.in
   Create), `DateTime`, camera make/model, and `OffsetTimeOriginal` when present.
 - A cautious comparison of date fields and file dates. File dates are only a
   pattern clue, never treated as evidence on their own.
-- Portable XMP sidecars and a JSON repair ledger. Sidecars retain the original
-  capture value and source offset; this v1 intentionally has no EXIF-writing
-  button.
+- Portable, ISO-8601 XMP sidecars and a complete JSON decision ledger. One ZIP
+  preserves relative folder paths and safely handles repeated filenames.
 - Offline app shell and browser-local repair-plan persistence.
 
 PNG, HEIC and TIFF can be chosen but are clearly reported as unsupported in this
@@ -26,19 +25,24 @@ before importing any sidecars into another metadata tool.
 ## Develop and verify
 
 ```sh
-npm install
+npm ci
 npm run dev
 npm test
+npm run lint
+npm run test:e2e
+npm run verify:xmp # requires ExifTool
 npm run build # produces ./dist/index.html
 ```
 
-Deploy `dist/` as a static site with history fallback if you want `/privacy` and
-`/terms` available without trailing slashes. The included pages also work as
-physical static directories.
+Deploy `dist/` as a static site. `public/staticwebapp.config.json` carries the
+Azure Static Web Apps fallback, security headers, manifest MIME override, and
+immutable hashed-asset caching policy.
 
 ## Privacy and license
 
 The app makes no network request for photo data and includes no analytics or
 third-party runtime assets. Findings are stored in browser local storage only
-until cleared. See `/privacy/` and `/terms/`. Source is available under the MIT
-license in [LICENSE](LICENSE).
+until cleared. The optional $12 one-time Archive Support license is purchased
+and verified through Sociobot/Dodo; only its token is sent for verification.
+See `/privacy/` and `/terms/`. Source is available under the MIT license in
+[LICENSE](LICENSE).

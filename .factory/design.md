@@ -35,7 +35,7 @@ The scan button is the clear, stamped primary action. Findings arrive as
 indexed notebook rows, while a selected repair reads like a margin annotation
 beside the original evidence. Actions use 180ms opacity/transform transitions;
 with `prefers-reduced-motion`, all transitions become instant. No decorative
-looping animation is used. Controls have 44px targets, a visible indigo focus
+looping animation is used. Controls have 44px targets, a visible red-pencil focus
 ring, and text labels in addition to marks.
 
 ## Asset plan and provenance
