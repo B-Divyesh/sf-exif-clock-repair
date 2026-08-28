@@ -9,7 +9,7 @@ const savedRecord = {
 };
 
 test('core workflow is semantic, keyboard reachable, and error free', async ({ page }) => {
-  const errors: string[] = []; page.on('pageerror', error => errors.push(String(error))); page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  const errors: string[] = []; const origins = new Set<string>(); page.on('request', request => origins.add(new URL(request.url()).origin)); page.on('pageerror', error => errors.push(String(error))); page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.goto('/');
   await expect(page).toHaveTitle(/Exif Clock Repair/); await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('h1')).toHaveCount(1); await expect(page.locator('main')).toHaveCount(1); await expect(page.locator('img:not([alt])')).toHaveCount(0);
@@ -19,7 +19,12 @@ test('core workflow is semantic, keyboard reachable, and error free', async ({ p
   const chooserEvent = page.waitForEvent('filechooser'); await page.keyboard.press('Enter'); const chooser = await chooserEvent; await chooser.setFiles('tests/fixtures');
   await expect(page.locator('#findings-title')).toContainText('1 file examined');
   const axe = await new AxeBuilder({ page }).analyze(); expect(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact || ''))).toEqual([]);
-  expect(errors).toEqual([]);
+  expect(errors).toEqual([]); expect([...origins]).toEqual([new URL(page.url()).origin]);
+});
+
+test('reduced motion removes interface transitions', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/');
+  await expect(page.locator('#folder-trigger')).toHaveCSS('transition-duration', '0s');
 });
 
 test('corrupt local state recovers with an announced next step', async ({ page }) => {
@@ -39,10 +44,11 @@ test('saved plan can be cleared on mobile and targets remain large', async ({ pa
 });
 
 test('license return is stored, stripped, and verified without blocking free use', async ({ page }) => {
-  await page.route('https://api.sociobot.in/**', route => route.fulfill({ json: { valid: true, reason: 'ok', expires_at: null }, headers: { 'access-control-allow-origin': '*' } }));
+  let verificationCalls = 0; await page.route('https://api.sociobot.in/**', route => { verificationCalls++; return route.fulfill({ json: { valid: true, reason: 'ok', expires_at: null }, headers: { 'access-control-allow-origin': '*' } }); });
   await page.goto('/?license=test-token'); await expect(page).toHaveURL('/');
   await expect(page.locator('#license-status')).toContainText('active');
   expect(await page.evaluate(() => localStorage.getItem('sb_license:exif-clock-repair'))).toBe('test-token');
+  await page.reload(); await expect(page.locator('#license-status')).toContainText('active'); expect(verificationCalls).toBe(1);
 });
 
 test('sidecars download once as a valid directory-preserving ZIP', async ({ page }, testInfo) => {
@@ -60,6 +66,8 @@ test('service worker restores the local workspace offline', async ({ page, conte
   await expect.poll(() => page.evaluate(async () => (await caches.open('exif-clock-repair-v4')).keys().then(keys => keys.some(key => key.url.includes('/assets/index-'))))).toBe(true);
   const cachedBytes = await page.evaluate(async () => { const cache = await caches.open('exif-clock-repair-v4'); const entries = (await cache.keys()).filter(request => request.url.includes('/assets/')); return Promise.all(entries.map(async request => (await (await cache.match(request))!.arrayBuffer()).byteLength)); });
   expect(cachedBytes.length).toBeGreaterThanOrEqual(2); expect(Math.min(...cachedBytes)).toBeGreaterThan(1000); await page.reload(); await expect(page.locator('#findings-title')).toContainText('1 file examined');
+  await page.evaluate(async () => { const registration = await navigator.serviceWorker.getRegistration(); await registration?.update(); });
+  expect(await page.evaluate(() => caches.keys())).toEqual(['exif-clock-repair-v4']);
   await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('#findings-title')).toContainText('1 file examined');
 });
