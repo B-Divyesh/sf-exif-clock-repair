@@ -1,0 +1,13 @@
+{
+  "name": "Exif Clock Repair",
+  "short_name": "Clock Repair",
+  "description": "Private, reversible photo timestamp repair.",
+  "start_url": "/?v=1",
+  "display": "standalone",
+  "background_color": "#f6f0df",
+  "theme_color": "#f6f0df",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
