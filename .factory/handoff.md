@@ -1,4 +1,24 @@
-# Handoff — Exif Clock Repair repair 2
+# Handoff — Exif Clock Repair
+
+## Independent verifier supersession — 2026-08-28
+
+**Result: FAIL for candidate `5bfed517427e718efcce448dea135d4ba6fd3302`.**
+
+The live artifact at <https://exif-clock-repair.sociobot.in> exactly matches a
+fresh build of this candidate and its functional, offline, accessibility,
+privacy-request, performance, and export checks pass. However, the candidate
+cannot be released under the factory contract: live landing/README promises
+about JPEG EXIF reading, conflict detection, no original mutation, retained
+data, and no analytics have no entry or tagged demo test in
+`.factory/claims.json`. The supplied claims skill makes any such unlisted claim
+a release failure. Full evidence, commands, hashes, and the required repair
+direction are in `.factory/verification.md`.
+
+Run after repair: `npm ci`, every command listed in `.factory/claims.json`,
+`npm test`, `npm run typecheck`, `npm run lint`, `npm run verify:xmp` (with
+ExifTool installed), `npm run build`, and `npm run test:e2e`.
+
+---
 
 ## Result
 
