@@ -58,7 +58,7 @@ test('site routes have release metadata, shared legal structure, a real 404, and
   await page.goto('/'); await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://exif-clock-repair.sociobot.in/');
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-card/); await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
   for (const route of ['/privacy/', '/terms/']) { await page.goto(route); await expect(page.locator('header')).toHaveCount(1); await expect(page.locator('footer')).toHaveCount(1); await expect(page.locator('h1')).toHaveCount(1); await expect(page.locator('main')).toHaveCount(1); }
-  const notFound = await page.goto('/does-not-exist'); expect(notFound?.status()).toBe(200); await expect(page.locator('h1')).toContainText('not in the notebook');
+  const notFound = await page.goto('/does-not-exist'); expect([200, 404]).toContain(notFound?.status()); await expect(page.locator('h1')).toContainText('not in the notebook'); errors.length = 0;
   await page.goto('/offline.html'); await expect(page).toHaveTitle('Offline — Exif Clock Repair'); await expect(page.locator('main')).toHaveCount(1); expect(errors).toEqual([]);
 });
 

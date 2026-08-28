@@ -60,13 +60,29 @@ Lighthouse 12.6.0, ExifTool 12.76.
 
 ## Deployment and live verification
 
-Pending this repair commit being pushed and deployed. Update this section with
-the deployment identifier, live browser/claim checks, response policy, and
-artifact hashes immediately afterward.
+Commit `a0a1bbf` was pushed to `main` and deployed with
+`/opt/fleet/lib/deploy-static.sh exif-clock-repair dist`.
+
+- Azure Static Web App deployment `6002d769-0d91-4347-81b7-49bd354ff47d`
+  completed successfully. The custom domain is ready at
+  <https://exif-clock-repair.sociobot.in>.
+- `PLAYWRIGHT_BASE_URL=https://exif-clock-repair.sociobot.in npx playwright test`:
+  24/24 pass across desktop and 390×844, including each claim command,
+  keyboard, Axe, privacy request capture, demo isolation, ZIP, and offline
+  service-worker reload.
+- `/opt/fleet/lib/verify-url.sh https://exif-clock-repair.sociobot.in`:
+  pass; 615 ms load, zero console/page errors, title/lang/one-`h1`/`main`/alt
+  checks pass. `/does-not-exist` now returns the designed page with HTTP 404.
+- Response policy: GET/HEAD 200, OPTIONS 204, POST 405, TRACE 405; HTTPS,
+  HSTS, CSP `frame-ancestors 'none'`, X-Frame-Options DENY,
+  Permissions-Policy, nosniff, and strict-origin referrer headers are live.
+  The worker is `no-cache`; hashed assets are immutable for one year.
+- Local/live SHA-256 pairs match exactly:
+  - `index.html`: `180d12aec6d28234a0780b5d773c6a2389acf2267e117c3ba315a0bb8e2bae3a`
+  - app JS: `1ca04c11ce868c2b3b2697be371a6c6cd3cf83735d7bf1e6f4ee4fb203d5efb7`
+  - app CSS: `ea52ccb1e88a4256fd400d684e677da906a45ec7e2e5ab5a85b7e82c5849390d`
+  - service worker: `a69d17445d93bc62c532ab36427e0f9c81c23ffad45bf6c8773d90b2aa1e3fa6`
 
 ## Known gaps
 
-None known locally. The static-preview server itself returns its standard
-SPA HTTP 200 for an unknown browser URL, while the deployed Azure configuration
-includes `responseOverrides` for the designed 404 response; validate that
-deployment behavior live.
+None.
