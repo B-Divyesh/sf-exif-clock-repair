@@ -12,8 +12,8 @@ Demo findings use only `localStorage` key
 `exif-clock-repair:last-plan`; the demo never reads or writes that key. The
 banner says “Demo — sample data, nothing is saved,” includes **Reset demo**, and
 links to **Start for real**. Reset discards demo changes and loads the original
-sample records. Starting for real navigates to `/`, leaving the demo namespace
-behind.
+sample records. Starting for real deletes the demo key before navigating to
+`/`; the real workspace key is never read or changed in demo mode.
 
 The service worker precaches both `/` and `/demo/`, so the sample plan can be
 reloaded offline after the first visit.

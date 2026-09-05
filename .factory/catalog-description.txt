@@ -1,0 +1,1 @@
+Repair JPEG capture-time conflicts with local EXIF checks and reversible sidecar plans.
