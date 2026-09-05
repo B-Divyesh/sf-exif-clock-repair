@@ -1,13 +1,13 @@
-# Handoff — independent verification 4
+# Handoff — independent review 1
 
 ## Result
 
 PASS. Independent QA reviewed implementation
 `f03779acb690ecd4500c09192b65c28b6f819704` at
-<https://exif-clock-repair.sociobot.in>. Documentation and final test coverage
-are at `13bdd9212a0a362a24d801bfa0a8fb35b7368e2c`. The later commit changes
-only claims/test/report material, not shipped product source. There are zero
-findings and zero untested public claims.
+<https://exif-clock-repair.sociobot.in>. The review/documentation checkout is
+`663a2cec1638d32742d43341b634a60c8e746912`; its diff changes only claims,
+tests, and factory reports, not shipped source. Fresh local JS/CSS hashes match
+the live runtime. There are zero findings and zero untested public claims.
 
 ## What was verified
 
@@ -22,9 +22,9 @@ findings and zero untested public claims.
   boundary offsets, corrupt saved state, keyboard, reduced motion, 200% text,
   XMP/ledger exports, original-file safety, browser-only storage, and offline
   demo reload.
-- Live route/link/404/title/legal/header/security checks pass. The live build
-  exactly matches the fresh local artifact hashes. Playwright Axe has no
-  serious or critical issues.
+- Live route/link/404/title/legal/header/security checks pass. The live JS/CSS
+  exactly match fresh local artifact hashes. Playwright Axe has no serious or
+  critical issues.
 
 ## How to run
 
@@ -47,10 +47,12 @@ PLAYWRIGHT_BASE_URL=https://exif-clock-repair.sociobot.in npm run test:e2e
 
 ## Notes
 
-Fresh mobile Lighthouse measured 99 performance, 100 accessibility, 100 best
-practices, and 100 SEO (LCP 1.1 s; CLS 0.026; 65 KiB transfer), meeting the
-required gate. The product is a static PWA with no backend, tenant, account,
-or payment workflow, so backend isolation, restart, and rate-limit checks do
-not apply. No product-code changes were made during this verification.
+The current source is unchanged from the performance-tested implementation;
+the recorded fresh mobile Lighthouse result is 99 performance, 100
+accessibility, 100 best practices, and 100 SEO (LCP 1.1 s; CLS 0.026; 65 KiB
+transfer). The product is a static PWA with no backend, tenant, account, or
+payment workflow, so backend isolation, restart, and rate-limit checks do not
+apply. No product-code changes were made during this review.
 
-Full evidence is in `.factory/verification-4.md`.
+Full current evidence is in `.factory/review-1.md`; the prior independent
+verification remains in `.factory/verification-4.md`.
