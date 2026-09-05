@@ -21,8 +21,8 @@ passed in fresh desktop and 390×844 mobile Chromium contexts:
 | `offline-reload` | `/demo` reloads after the browser context goes offline. |
 | `sidecar-export` | One ZIP contains directory-preserving XMP files and a complete reversible ledger. |
 | `free-core` | Proposals and exports work without account or purchase state. |
-| `jpeg-exif-reading` | A valid JPEG exposes capture/create dates, make, model, and offset; PNG, HEIC, and TIFF report unsupported. |
-| `conflict-detection` | A +8-hour pattern and EXIF disagreement are staged; +1 hour 20 minutes is not staged. |
+| `jpeg-exif-reading` | A valid JPEG exposes capture/create dates, make, model, and offset; PNG, HEIC, TIFF, and malformed JPEG paths recover safely. |
+| `conflict-detection` | +8-hour, boundary +14-hour, and EXIF disagreement cases are staged; +15 hours and +1 hour 20 minutes are not. |
 | `originals-unchanged` | SHA-256 of the selected source file is identical before and after scan and both exports. |
 | `plan-storage` | Structured plan metadata survives reload and clears on reset; no photo payload appears in browser storage. |
 | `no-analytics` | The full demo uses known same-origin static assets, no XHR/fetch traffic, and no cookies. |

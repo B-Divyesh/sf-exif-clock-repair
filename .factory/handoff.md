@@ -46,8 +46,8 @@ ID are recorded in `.factory/verification-4.md`.
 ## Deployment
 
 Deployment ID: `97feb52a-b904-4249-b724-6ea9096d0f95`. The live runtime is the
-implementation candidate above. This handoff is a later documentation-only
-change and does not require another product image.
+implementation candidate above. This handoff and its later verification-only
+test hardening do not change the built product image.
 
 ## Remaining gaps
 

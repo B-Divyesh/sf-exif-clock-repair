@@ -206,15 +206,23 @@ test('@claim:jpeg-exif-reading reads supported JPEG metadata and reports unsuppo
   await expect(page.locator('#findings-title')).toContainText('3 files examined');
   await expect(page.locator('.entry-main').filter({ hasText: 'Not scanned — JPEG EXIF only' })).toHaveCount(3);
   await expect(page.locator('.entry-result').filter({ hasText: 'No documented capture time' })).toHaveCount(3);
+  await page.locator('#files').setInputFiles({ name: 'broken.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('malformed jpeg bytes') });
+  await expect(page.locator('#findings-title')).toContainText('1 file examined · 0 sidecars ready');
+  await expect(page.locator('.entry')).toContainText('Unknown camera'); await expect(page.locator('.entry')).toContainText('No documented capture time');
 });
 
 test('@claim:conflict-detection finds exact whole-hour and EXIF-field conflicts without rounding', async ({ page }, testInfo) => {
   const exact = writeExifFixture(testInfo.outputPath('exact-eight-hours.jpg'), {}, '2012-07-04T17:15:30Z');
+  const boundary = writeExifFixture(testInfo.outputPath('boundary-fourteen-hours.jpg'), {}, '2012-07-04T23:15:30Z');
+  const outside = writeExifFixture(testInfo.outputPath('outside-fifteen-hours.jpg'), {}, '2012-07-05T00:15:30Z');
   const conflict = writeExifFixture(testInfo.outputPath('field-conflict.jpg'), { created: '2012:07:04 10:15:30' }, '2012-07-04T09:15:30Z');
   const nearby = writeExifFixture(testInfo.outputPath('nearby-not-whole.jpg'), {}, '2012-07-04T10:35:30Z');
-  await page.goto('/demo'); await page.locator('#files').setInputFiles([exact, conflict, nearby]);
-  await expect(page.locator('#findings-title')).toContainText('3 files examined · 2 sidecars ready');
+  await page.goto('/demo'); await page.locator('#files').setInputFiles([exact, boundary, outside, conflict, nearby]);
+  await expect(page.locator('#findings-title')).toContainText('5 files examined · 3 sidecars ready');
   await expect(page.locator('.entry').filter({ hasText: 'exact-eight-hours.jpg' })).toContainText('File date is +8h from capture time');
+  await expect(page.locator('.entry').filter({ hasText: 'boundary-fourteen-hours.jpg' })).toContainText('File date is +14h from capture time');
+  const outsideEntry = page.locator('.entry').filter({ hasText: 'outside-fifteen-hours.jpg' });
+  await expect(outsideEntry).toContainText('No clear repair proposed'); await expect(outsideEntry.locator('input[type="checkbox"]')).not.toBeChecked();
   await expect(page.locator('.entry').filter({ hasText: 'field-conflict.jpg' })).toContainText('EXIF date fields disagree');
   const nearbyEntry = page.locator('.entry').filter({ hasText: 'nearby-not-whole.jpg' });
   await expect(nearbyEntry).toContainText('No clear repair proposed'); await expect(nearbyEntry.locator('input[type="checkbox"]')).not.toBeChecked();

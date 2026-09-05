@@ -39,14 +39,14 @@
     "claim": "Reads documented JPEG EXIF capture dates, camera make and model, and OffsetTimeOriginal; reports PNG, HEIC, and TIFF as unsupported.",
     "where": "landing, README, privacy, terms",
     "test": "npm run test:e2e -- --grep @claim:jpeg-exif-reading",
-    "sandbox": "fresh browser context at /demo; scan a valid JPEG carrying the documented EXIF fields and assert the rendered values, then scan PNG, HEIC, and TIFF inputs and assert the unsupported result"
+    "sandbox": "fresh browser context at /demo; scan a valid JPEG carrying the documented EXIF fields and assert the rendered values, then scan PNG, HEIC, TIFF, and a malformed JPEG and assert safe unsupported or no-metadata results"
   },
   {
     "id": "conflict-detection",
     "claim": "Flags EXIF date-field disagreements and exact whole-hour file-date patterns without rounding nearby differences.",
     "where": "landing, README",
     "test": "npm run test:e2e -- --grep @claim:conflict-detection",
-    "sandbox": "fresh browser context at /demo; scan valid EXIF JPEGs with a field disagreement, an exact +8-hour file-date delta, and a +1-hour-20-minute delta; assert only the first two are proposed"
+    "sandbox": "fresh browser context at /demo; scan valid EXIF JPEGs with a field disagreement, exact +8-hour and boundary +14-hour deltas, an out-of-range +15-hour delta, and a +1-hour-20-minute delta; assert only eligible findings are proposed"
   },
   {
     "id": "originals-unchanged",
