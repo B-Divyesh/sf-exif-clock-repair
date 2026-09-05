@@ -1,57 +1,56 @@
-# Handoff — Exif Clock Repair repair 3
+# Handoff — independent verification 4
 
 ## Result
 
-PASS. Implementation candidate
-`f03779acb690ecd4500c09192b65c28b6f819704` is pushed, deployed, and verified
-at <https://exif-clock-repair.sociobot.in>.
+PASS. Independent QA reviewed implementation
+`f03779acb690ecd4500c09192b65c28b6f819704` at
+<https://exif-clock-repair.sociobot.in>. Documentation and final test coverage
+are at `13bdd9212a0a362a24d801bfa0a8fb35b7368e2c`. The later commit changes
+only claims/test/report material, not shipped product source. There are zero
+findings and zero untested public claims.
 
-The missing-claims blocker from independent verification 3 is fixed. The
-claims inventory now covers JPEG EXIF reading, conflict detection, unchanged
-originals, browser retention without photo bytes, and no analytics. Each of the
-ten declared claims has exactly one tagged outcome test and each command passes
-independently on desktop and mobile.
+## What was verified
 
-## Changes
+- Fresh desktop and phone visits identify the job, audience, and first action
+  before scrolling. One-click sample data opens a populated isolated workspace
+  with the persistent resettable demo label.
+- All ten declared claim commands passed independently (desktop and 390px
+  mobile); full local and live Playwright suites passed 34/34 each.
+- `npm ci`, audit, 12 unit tests, lint, typecheck, ExifTool XMP verification,
+  and production build passed in a fresh clone. `dist/` is produced.
+- The app handles valid JPEG metadata, unsupported/malformed files, exact and
+  boundary offsets, corrupt saved state, keyboard, reduced motion, 200% text,
+  XMP/ledger exports, original-file safety, browser-only storage, and offline
+  demo reload.
+- Live route/link/404/title/legal/header/security checks pass. The live build
+  exactly matches the fresh local artifact hashes. Playwright Axe has no
+  serious or critical issues.
 
-- Added real EXIF-bearing JPEG browser fixtures for capture fields, camera,
-  offset, exact-hour, nearby non-hour, and disagreement outcomes.
-- Added before/after source-file hashing, browser-storage inspection, traffic
-  allowlisting, unsupported-format, and account-free regression checks.
-- Strengthened ZIP evidence to inspect the decision ledger, reversible flags,
-  folder paths, and sidecar timestamps.
-- Made Start for real delete demo state before leaving the isolated namespace.
-- Corrected the storage copy: plan metadata persists until cleared; photo bytes
-  do not. Expanded `.factory/copy-audit.md` to all landing states.
-- Replaced the metaphorical 404 heading and generic footer line with plain,
-  product-specific language.
-- Added the 88-character verb-first catalog description and copied it to
-  `/work/.evidence/catalog-description.txt`.
+## How to run
 
-## Verification
+```sh
+npm ci
+npm test
+npm run lint
+npm run typecheck
+npm run verify:xmp # install ExifTool first
+npm run test:e2e
+npm run build
+```
 
-- Clean install/audit: pass, zero vulnerabilities.
-- Claims: 10 commands, 2/2 desktop/mobile tests per command.
-- Unit: 12/12. Full browser suite: 34/34 local and 34/34 live.
-- Lint, typecheck, build, and ExifTool XMP readback: pass.
-- Local and live URL smoke checks: pass with no console errors.
-- Live Lighthouse mobile: 100 performance, 100 accessibility, 100 best
-  practices, 100 SEO; LCP 1.1 s, CLS 0.026, 65 KiB transfer.
-- Live artifact hashes match the local candidate. The designed unknown route
-  returns HTTP 404; security headers and method restrictions are present.
+For every visitor-facing claim, run the command listed in
+`.factory/claims.json`. For live regression:
 
-Full commands, evidence, hashes, previous-finding disposition, and deployment
-ID are recorded in `.factory/verification-4.md`.
+```sh
+PLAYWRIGHT_BASE_URL=https://exif-clock-repair.sociobot.in npm run test:e2e
+```
 
-## Deployment
+## Notes
 
-Deployment ID: `97feb52a-b904-4249-b724-6ea9096d0f95`. The live runtime is the
-implementation candidate above. This handoff and its later verification-only
-test hardening do not change the built product image.
+Fresh mobile Lighthouse measured 99 performance, 100 accessibility, 100 best
+practices, and 100 SEO (LCP 1.1 s; CLS 0.026; 65 KiB transfer), meeting the
+required gate. The product is a static PWA with no backend, tenant, account,
+or payment workflow, so backend isolation, restart, and rate-limit checks do
+not apply. No product-code changes were made during this verification.
 
-## Remaining gaps
-
-No known product defect remains. `npm run verify:xmp` requires ExifTool, as
-documented in the README. The inherited static product has no backend or paid
-offer, so tenant, restart, rate-limit, and billing-registration checks do not
-apply.
+Full evidence is in `.factory/verification-4.md`.

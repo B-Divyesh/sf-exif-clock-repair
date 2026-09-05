@@ -1,93 +1,151 @@
-# Repair verification 4 — Exif Clock Repair
+# Independent verification 4 — Repair photo capture clocks before sorting
 
-Verified 2026-09-05. The implementation candidate is
-`f03779acb690ecd4500c09192b65c28b6f819704`.
+**Verdict: PASS.** There are zero findings and zero untested public claims.
 
-## Result
+Verified on 2026-09-05 from a fresh clone and clean dependency install. The
+implementation reviewed is `f03779acb690ecd4500c09192b65c28b6f819704`.
+The verification/documentation checkout is
+`13bdd9212a0a362a24d801bfa0a8fb35b7368e2c`; its diff from the implementation
+changes claims/test/report files only, not shipped product source. Live URL:
+<https://exif-clock-repair.sociobot.in>.
 
-PASS. The release-blocking claims defect in `.factory/verification-3.md` is
-fixed. All visitor-facing claims called out by that verifier now have entries
-in `.factory/claims.json` and one outcome-based tagged browser test each.
+## First screen and demo
+
+Fresh, cache-free desktop (1440×900) and phone (iPhone 13) sessions were
+checked before scrolling. Both showed the same first screen:
+
+- Job: “Repair photo capture clocks before sorting.”
+- Audience: people sorting a family photo archive with dates changed by
+  cameras, computers, or time zones.
+- First action: **Try it with sample data**; its adjacent result says it opens
+  a three-photo repair plan immediately.
+- Facts: photos stay on this device; it works offline after the first visit;
+  it is free with no purchase required.
+
+The action was in the initial viewport in both sessions. One click opened
+`/demo`, showing “3 files examined · 2 sidecars ready” and the persistent
+“Demo — sample data, nothing is saved” banner with **Reset demo** and
+**Start for real**. There were no browser console or page errors.
+
+Independent live reset exercise: a pre-seeded real plan remained byte-for-byte
+unchanged while a demo proposal was deselected; **Reset demo** removed only
+`demo:exif-clock-repair:last-plan` and restored the sample. No real photo or
+plan was modified.
 
 ## Claim gate
 
-Each declared command was run independently after `npm ci`. Every command
-passed in fresh desktop and 390×844 mobile Chromium contexts:
+All commands below were run independently after `npm ci` in the fresh clone.
+Each passed in desktop and 390×844 mobile Chromium (2/2 each). The final full
+suite also passed locally and against live, covering normal, malformed,
+unsupported-format, boundary, recovery, keyboard, reduced-motion, offline,
+privacy, legal-route, and 404 paths.
 
-| Claim ID | Observable evidence |
+| Claim ID | Command | Result |
+| --- | --- | --- |
+| `demo-isolated` | `npm run test:e2e -- --grep @claim:demo-isolated` | PASS, 2/2 |
+| `local-photo-processing` | `npm run test:e2e -- --grep @claim:local-photo-processing` | PASS, 2/2 |
+| `offline-reload` | `npm run test:e2e -- --grep @claim:offline-reload` | PASS, 2/2 |
+| `sidecar-export` | `npm run test:e2e -- --grep @claim:sidecar-export` | PASS, 2/2 |
+| `free-core` | `npm run test:e2e -- --grep @claim:free-core` | PASS, 2/2 |
+| `jpeg-exif-reading` | `npm run test:e2e -- --grep @claim:jpeg-exif-reading` | PASS, 2/2 |
+| `conflict-detection` | `npm run test:e2e -- --grep @claim:conflict-detection` | PASS, 2/2 |
+| `originals-unchanged` | `npm run test:e2e -- --grep @claim:originals-unchanged` | PASS, 2/2 |
+| `plan-storage` | `npm run test:e2e -- --grep @claim:plan-storage` | PASS, 2/2 |
+| `no-analytics` | `npm run test:e2e -- --grep @claim:no-analytics` | PASS, 2/2 |
+
+The landing page, README, privacy page, and terms page were cross-checked
+against `.factory/claims.json`. All visitor-reliance claims are represented
+by one observable tagged test. Untested public claims: **0**.
+
+## Clean-checkout checks
+
+- `npm ci` and `npm audit --audit-level=low`: PASS; 60 packages installed,
+  zero vulnerabilities.
+- `npm test`: PASS, 12/12.
+- `npm run lint` and `npm run typecheck`: PASS.
+- `npm run verify:xmp`: PASS for `-04:00`, `+05:30`, `+12:45`, and no offset.
+  ExifTool was installed as the README-documented prerequisite before this
+  runtime check.
+- `npm run build`: PASS; `dist/index.html` exists. Main JS is 18,175 bytes
+  raw / 7.13 KiB gzip and CSS is 8,409 bytes raw / 2.56 KiB gzip.
+- `npm run test:e2e -- --reporter=dot`: PASS, 34/34 local.
+- `PLAYWRIGHT_BASE_URL=https://exif-clock-repair.sociobot.in npm run test:e2e -- --reporter=dot`:
+  PASS, 34/34 live.
+
+`verify-url.sh` passed for live `/` and `/demo`: titles, `lang=en`, one `h1`,
+`main`, image alt text, labelled buttons, and no console errors. The suite's
+Playwright Axe integration passed with zero serious or critical violations.
+The standalone Axe CLI could not start because this container has no system
+Chrome binary; this is not an untested accessibility claim because the
+attached accessibility contract permits the Playwright Axe integration, which
+ran against the product in both full suites.
+
+Fresh live route/link crawl: `/`, `/demo`, `/privacy/`, `/terms/`,
+`/offline.html`, manifest, robots, and sitemap returned 200. Every internal
+link returned 200. `/does-not-exist` deliberately returned the designed 404
+page with title “Page not found — Exif Clock Repair” and heading “This page was
+not found.”
+
+## Live, PWA, privacy, and performance evidence
+
+- The live demo reloaded offline after service-worker control and rendered the
+  populated sample plan. The worker precaches the app shell, removes old
+  product caches, and supplies the in-app update notice path.
+- The complete local and live test flows observed only same-origin static
+  requests, no XHR/fetch/beacon/websocket traffic, and no cookies. Photo bytes
+  were absent from local/session/IndexedDB/cache storage; plan metadata
+  persisted until reset or clear.
+- GET and HEAD returned 200; OPTIONS returned 204; POST and TRACE returned
+  405. Live headers include HSTS, CSP with `frame-ancestors 'none'`,
+  `X-Frame-Options: DENY`, `nosniff`, referrer and permissions policies.
+- Fresh build and live artifact SHA-256 values match exactly:
+  `index.html` `5134b07ef04cb9c6846107ea5514c70ef1c2153c9ffc8b10e6bed7eae1b6e950`;
+  JS `54df2fa79e0efe4e4dbae5ab1ac4322d732bd35a02367ace3943785b0a467a4c`;
+  CSS `ea52ccb1e88a4256fd400d684e677da906a45ec7e2e5ab5a85b7e82c5849390d`;
+  service worker `a69d17445d93bc62c532ab36427e0f9c81c23ffad45bf6c8773d90b2aa1e3fa6`.
+- Fresh live mobile Lighthouse measurement: performance 99, accessibility 100,
+  best practices 100, SEO 100; LCP 1.1 s, CLS 0.026, TBT 90 ms, 65 KiB total
+  transfer. This meets the required performance gate. The earlier 100
+  performance score was not reproduced; Lighthouse performance varies slightly
+  between runs and is not a visitor-facing quantitative claim.
+
+This is a static PWA. There is no product backend, tenant, login, payment, or
+server-side state; tenant isolation, restart persistence, and 429/Retry-After
+checks do not apply.
+
+## Earlier finding disposition
+
+| Earlier finding | Current disposition and evidence |
 | --- | --- |
-| `demo-isolated` | Demo changes and reset never alter the real key; Start for real deletes the demo key. |
-| `local-photo-processing` | A private EXIF JPEG and both exports send no photo or plan payload. |
-| `offline-reload` | `/demo` reloads after the browser context goes offline. |
-| `sidecar-export` | One ZIP contains directory-preserving XMP files and a complete reversible ledger. |
-| `free-core` | Proposals and exports work without account or purchase state. |
-| `jpeg-exif-reading` | A valid JPEG exposes capture/create dates, make, model, and offset; PNG, HEIC, TIFF, and malformed JPEG paths recover safely. |
-| `conflict-detection` | +8-hour, boundary +14-hour, and EXIF disagreement cases are staged; +15 hours and +1 hour 20 minutes are not. |
-| `originals-unchanged` | SHA-256 of the selected source file is identical before and after scan and both exports. |
-| `plan-storage` | Structured plan metadata survives reload and clears on reset; no photo payload appears in browser storage. |
-| `no-analytics` | The full demo uses known same-origin static assets, no XHR/fetch traffic, and no cookies. |
+| Negative-offset XMP interoperability | Fixed: `verify:xmp` passes four offset/no-offset forms and ZIP tests inspect XMP/ledger output. |
+| Keyboard-unreachable scan actions | Fixed: full suite tabs to the file chooser, confirms focus and Enter operation. |
+| Unsafe 10k/colliding export | Fixed: unit suite passes the 10k archive case; ZIP claim confirms folder-preserving paths and one bundle. |
+| Rounded +1h20m pattern | Fixed: conflict claim accepts exact +8/+14 and rejects +15 and +1h20m. |
+| Corrupt storage blank page | Fixed: recovery test clears corrupt state and announces the next step. |
+| Hidden mobile clear path | Fixed: mobile test exposes and operates the clear control. |
+| Small targets/default focus | Fixed: target-size and designed focus assertions pass. |
+| Axe landmark violation | Fixed: Playwright Axe has zero serious/critical violations. |
+| Missing paid unlock | Retired deliberately: no paid tier or purchase claim remains; core workflow is free and tested. |
+| Vulnerable tooling | Fixed: fresh audit reports zero vulnerabilities. |
+| Short asset cache/old caches retained | Fixed: live hashed assets are immutable and worker test confirms only cache v5 remains. |
+| Missing CSP/framing/permissions policy | Fixed: live headers verified above. |
+| Manifest wrong MIME | Fixed: manifest route and configured MIME are live. |
+| Singular result copy | Fixed by plural-aware count assertions in full suite. |
+| Figure shadow/caption duplication | Fixed in current rendered art; no duplicated caption treatment observed. |
+| Missing claims manifest/tests | Fixed: ten entries and ten independent tagged commands pass. |
+| Missing isolated demo | Fixed: direct desktop/phone exercise and isolation/reset test pass. |
+| Unclear first screen | Fixed: cold first-screen check above passes on desktop and phone. |
+| Broken purchase link | Removed with the retired paid tier; no purchase link remains. |
+| Offline CSP console error | Fixed: `/offline.html` loaded with no console errors. |
+| 200% mobile text overflow | Fixed: full suite verifies no horizontal overflow at 390px and 200% text. |
+| Missing robots/sitemap/metadata/404/legal shell | Fixed: route crawl, metadata/legal assertions, and designed HTTP 404 pass. |
+| Missing demo and copy-audit docs | Fixed: `.factory/demo.md` and `.factory/copy-audit.md` exist and match live behavior/copy. |
+| Unlisted JPEG, storage, conflict, original, and no-analytics claims | Fixed: the final five claim IDs cover each outcome and pass independently. |
 
-The previous inaccurate sentence saying that only filenames and findings were
-stored now says that repair-plan metadata is stored and photo bytes are not.
-The test inspects local storage, session storage, IndexedDB, and Cache Storage.
+## Evidence and result
 
-## Full local verification
+URL-smoke evidence is in `/work/.evidence/live-root-verify4` and
+`/work/.evidence/live-demo-verify4`; the Lighthouse JSON is
+`/work/.evidence/lighthouse-verify4.json`.
 
-Environment: Node 22.23.2, npm 10.9.8, Playwright 1.58.2, Chromium 145,
-ExifTool 12.76, Lighthouse 12.6.0.
-
-- `npm ci` and `npm audit --audit-level=low`: pass; zero vulnerabilities.
-- `npm test`: 12/12 pass.
-- `npm run lint` and `npm run typecheck`: pass.
-- `npm run verify:xmp`: pass for `-04:00`, `+05:30`, `+12:45`, and no offset.
-- `npm run build`: pass; `dist/index.html` exists. Main JS is 18.18 KB raw /
-  7.13 KB gzip; CSS is 8.41 KB raw / 2.56 KB gzip.
-- `npm run test:e2e`: 34/34 pass across desktop and mobile. This includes Axe,
-  keyboard focus, 44 px targets, 200% text, reduced motion, error recovery,
-  route titles, legal pages, 404, ZIP output, privacy traffic, and offline reload.
-- `/opt/fleet/lib/verify-url.sh` passes for local `/` and `/demo` with no
-  console errors, one `h1`, `main`, `lang=en`, and complete image alt text.
-- Local mobile Lighthouse: performance 100, accessibility 100, best practices
-  100, SEO 100; LCP 1.7 s, CLS 0.026, TBT 0 ms.
-
-## Deployment and cold live verification
-
-`/opt/fleet/lib/deploy-static.sh exif-clock-repair dist` deployed the candidate
-successfully. Azure deployment ID:
-`97feb52a-b904-4249-b724-6ea9096d0f95`.
-
-- Live desktop/mobile Playwright: 34/34 pass, including all claim tests and the
-  service-worker offline reload.
-- Fresh live `/` and `/demo` URL checks: pass with no console or page errors.
-  Screenshots and JSON reports are under `/work/.evidence/live-root` and
-  `/work/.evidence/live-demo`.
-- Live mobile Lighthouse: performance 100, accessibility 100, best practices
-  100, SEO 100; FCP 0.8 s, LCP 1.1 s, CLS 0.026, TBT 10 ms, 65 KiB transfer.
-- `/does-not-exist` returns the designed page with HTTP 404. Its heading is now
-  plain: “This page was not found.”
-- GET/HEAD return 200, OPTIONS 204, and POST/TRACE 405. HSTS, CSP with
-  `frame-ancestors 'none'`, X-Frame-Options DENY, Permissions-Policy,
-  `nosniff`, and strict-origin referrers are present. Hashed assets are immutable
-  for one year; the app document revalidates.
-- Live and local SHA-256 values match:
-  - `index.html`: `5134b07ef04cb9c6846107ea5514c70ef1c2153c9ffc8b10e6bed7eae1b6e950`
-  - app JS: `54df2fa79e0efe4e4dbae5ab1ac4322d732bd35a02367ace3943785b0a467a4c`
-  - app CSS: `ea52ccb1e88a4256fd400d684e677da906a45ec7e2e5ab5a85b7e82c5849390d`
-  - service worker: `a69d17445d93bc62c532ab36427e0f9c81c23ffad45bf6c8773d90b2aa1e3fa6`
-
-## Earlier findings
-
-The XMP interoperability, collision-safe bulk export, exact-hour detection,
-corrupt-state recovery, keyboard/touch access, mobile clearing, Axe landmark,
-dependency, service-worker cache, security-header, CSP, metadata, legal-shell,
-plain first screen, demo, and 200%-text findings remain fixed. This repair adds
-regression evidence for the only open finding in verification 3.
-
-This is a static PWA with no product backend, tenant data, account endpoint, or
-paid offer in the inherited candidate. Backend isolation, restart persistence,
-rate-limit, and billing-registration checks are therefore not applicable.
-
-## Remaining gaps
-
-No known product defect remains. `npm run verify:xmp` still requires the
-documented ExifTool system prerequisite.
+**Final result: PASS — 0 findings; 0 untested claims.**
